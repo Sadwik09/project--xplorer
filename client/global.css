@@ -1,5 +1,5 @@
 /** @import must precede all other statements */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -12,6 +12,9 @@
    * A different format will require also updating the theme in tailwind.config.ts.
   */
   :root {
+    --font-display: "Instrument Serif", serif;
+    --font-body: "Inter", sans-serif;
+
     --background: 0 0% 100%;
     --foreground: 210 11% 15%;
 
@@ -104,7 +107,13 @@
   }
 
   body {
+    font-family: var(--font-body);
     @apply bg-background text-foreground;
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
@@ -117,4 +126,98 @@
     overflow-x: auto;
     white-space: pre;
   }
+}
+
+.cinematic-theme {
+  --background: 201 100% 13%;
+  --foreground: 0 0% 100%;
+  --muted-foreground: 240 4% 66%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 0 0% 10%;
+  --muted: 0 0% 10%;
+  --accent: 0 0% 10%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.8s ease-out both;
+}
+
+.animate-fade-rise-delay {
+  animation: fade-rise 0.8s ease-out 0.2s both;
+}
+
+.animate-fade-rise-delay-2 {
+  animation: fade-rise 0.8s ease-out 0.4s both;
+}
+
+.home-cinematic {
+  background: hsl(var(--background));
+}
+
+.home-cinematic .bg-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.home-cinematic .border-border,
+.home-cinematic [class*="border-border"] {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+.home-cinematic .text-primary {
+  color: hsl(var(--foreground)) !important;
+}
+
+.home-cinematic .bg-primary {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+.home-cinematic .text-primary-foreground {
+  color: hsl(var(--foreground)) !important;
+}
+
+.home-cinematic .hover\:bg-muted:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.loading-screen-theme {
+  --bg: #0a0a0a;
+  --text: #f5f5f5;
+  --muted: #888888;
+  --stroke: #1f1f1f;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.bg-bg {
+  background-color: var(--bg);
+}
+
+.text-text {
+  color: var(--text);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.bg-stroke\/50 {
+  background-color: rgba(31, 31, 31, 0.5);
 }

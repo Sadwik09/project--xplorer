@@ -1,5 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import Layout from "@/components/Layout";
 import { AlertCircle, Home } from "lucide-react";
 
@@ -15,6 +16,11 @@ const NotFound = () => {
 
   return (
     <Layout>
+      <Helmet>
+        <title>404 | ProjExplorer</title>
+        <meta name="description" content="Page not found on ProjExplorer." />
+      </Helmet>
+
       <div className="flex-1 flex items-center justify-center py-20">
         <div className="text-center max-w-md">
           <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-6 opacity-80" />

@@ -1,8 +1,19 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { AnimatePresence, motion } from "framer-motion";
+import toast from "react-hot-toast";
 import Layout from "@/components/Layout";
+import LoadingScreen from "@/components/LoadingScreen";
 import { projects, Category, Difficulty } from "@/lib/projects";
-import { Search, Filter, ChevronRight, Zap, BookOpen, Brain } from "lucide-react";
+import { useFilters } from "@/hooks/useFilters";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useProjects } from "@/hooks/useProjects";
+import { useSavedProjects } from "@/hooks/useSavedProjects";
+import FilterBar from "@/components/FilterBar";
+import ProjectCardSkeleton from "@/components/ProjectCardSkeleton";
+import EmptyState from "@/components/EmptyState";
+import { ChevronRight, Zap, BookOpen, Brain, Heart } from "lucide-react";
 
 const difficultyConfig: Record<Difficulty, { color: string; bgColor: string; icon: React.ReactNode }> = {
   Beginner: {
@@ -29,33 +40,161 @@ const categoryIcons: Record<Category, React.ReactNode> = {
   Backend: "⚙️",
   Desktop: "💻",
   "Data Science": "📊",
+  Cloud: "☁️",
+  DevOps: "🛠️",
+  Cybersecurity: "🔐",
+  "Game Development": "🎮",
+  Blockchain: "⛓️",
+  IoT: "📡",
+  "AR/VR": "🕶️",
+  Automation: "⚡",
+  "UI/UX": "🎨",
+  "Open Source": "🧩",
 };
 
+const ITEMS_PER_PAGE = 9;
+
 export default function Index() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const location = useLocation();
+  const { filters, setFilter, clearFilters } = useFilters();
+  const [showMainHome, setShowMainHome] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [queryDraft, setQueryDraft] = useState(filters.query);
+  const [currentPage, setCurrentPage] = useState(1);
+  const debouncedQuery = useDebounce(queryDraft, 300);
 
-  const filteredProjects = useMemo(() => {
-    return projects.filter((project) => {
-      const matchesSearch =
-        project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesDifficulty = !selectedDifficulty || project.difficulty === selectedDifficulty;
-      const matchesCategory = !selectedCategory || project.category === selectedCategory;
+  const effectiveFilters = useMemo(
+    () => ({ ...filters, query: debouncedQuery }),
+    [filters, debouncedQuery],
+  );
+  const { projects: filteredProjects, loading } = useProjects(effectiveFilters);
+  const { isSaved, toggleSaved, canSave } = useSavedProjects();
 
-      return matchesSearch && matchesDifficulty && matchesCategory;
+  useEffect(() => {
+    setQueryDraft(filters.query);
+  }, [filters.query]);
+
+  useEffect(() => {
+    if (debouncedQuery !== filters.query) {
+      setFilter("query", debouncedQuery);
+    }
+  }, [debouncedQuery, filters.query, setFilter]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.query, filters.difficulty, filters.category, filters.sort]);
+
+  useEffect(() => {
+    if (!location.hash) return;
+
+    const sectionId = location.hash.replace("#", "");
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+
+    window.requestAnimationFrame(() => {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
     });
-  }, [searchQuery, selectedDifficulty, selectedCategory]);
+  }, [location.hash]);
 
   const uniqueCategories = Array.from(new Set(projects.map((p) => p.category))).sort();
   const uniqueDifficulties: Difficulty[] = ["Beginner", "Intermediate", "Advanced"];
 
+  const activeFilterCount = [
+    Boolean(filters.query),
+    Boolean(filters.difficulty),
+    Boolean(filters.category),
+    filters.sort !== "newest",
+  ].filter(Boolean).length;
+
+  const totalPages = Math.max(1, Math.ceil(filteredProjects.length / ITEMS_PER_PAGE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
+
+  if (!showMainHome) {
+    return (
+      <>
+        <Helmet>
+          <title>ProjeXplorer | Begin Journey</title>
+          <meta
+            name="description"
+            content="A cinematic digital studio for deep thinkers, bold creators, and quiet rebels."
+          />
+        </Helmet>
+
+        <main className="cinematic-theme relative min-h-screen overflow-hidden bg-background text-foreground">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          >
+            <source
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4"
+              type="video/mp4"
+            />
+          </video>
+
+          <div className="relative z-10 flex min-h-screen flex-col">
+            <header className="px-8 py-6">
+              <nav className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
+                <p
+                  className="text-3xl tracking-tight text-foreground"
+                  style={{ fontFamily: "'Instrument Serif', serif" }}
+                >
+                  ProjeXplorer
+                </p>
+              </nav>
+            </header>
+
+            <section className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-[90px] pt-32 pb-40 text-center">
+              <h1
+                className="animate-fade-rise max-w-7xl text-5xl font-normal leading-[0.95] tracking-[-2.46px] text-foreground sm:text-7xl md:text-8xl"
+                style={{ fontFamily: "'Instrument Serif', serif" }}
+              >
+                Discover Ideas. <em className="not-italic text-muted-foreground">Learn. Build.</em>
+              </h1>
+
+              <p className="animate-fade-rise-delay mt-8 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+                Overcome analysis paralysis. Explore well-structured project ideas with step-by-step guides
+                that help you learn meaningful skills while building real applications.
+              </p>
+
+              <button
+                onClick={() => {
+                  setShowMainHome(true);
+                  setIsLoading(true);
+                }}
+                className="animate-fade-rise-delay-2 mt-12 cursor-pointer rounded-full border border-white/30 bg-white/10 px-14 py-5 text-base text-foreground transition-transform duration-300 hover:scale-[1.03]"
+              >
+                Begin Journey
+              </button>
+            </section>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   return (
+    <div className="cinematic-theme home-cinematic min-h-screen bg-background text-foreground">
+    <AnimatePresence mode="wait">
+      {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
+    </AnimatePresence>
+
+    <div style={{ opacity: isLoading ? 0 : 1, transition: "opacity 0.5s ease-out" }}>
     <Layout>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/5 to-background py-12 md:py-20">
+      <Helmet>
+        <title>ProjeXplorer | Discover, Learn, Build</title>
+        <meta
+          name="description"
+          content="Browse curated project ideas by difficulty, category, and technologies to build your developer portfolio."
+        />
+      </Helmet>
+
+      <section className="relative overflow-hidden py-12 md:py-20">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
@@ -66,175 +205,174 @@ export default function Index() {
               Overcome analysis paralysis. Explore well-structured project ideas with step-by-step guides
               that help you learn meaningful skills while building real applications.
             </p>
-
-            {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search projects..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 md:py-4 rounded-xl border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-
-            {/* Filter Toggle */}
-            <div className="mt-6 flex justify-center">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-foreground hover:bg-muted transition-colors"
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-              </button>
-            </div>
           </div>
 
-          {/* Filters Panel */}
-          {showFilters && (
-            <div className="mt-8 p-6 bg-card rounded-xl border border-border">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Difficulty Filter */}
-                <div>
-                  <h3 className="font-semibold text-foreground mb-3">Difficulty Level</h3>
-                  <div className="space-y-2">
-                    {uniqueDifficulties.map((difficulty) => (
-                      <button
-                        key={difficulty}
-                        onClick={() =>
-                          setSelectedDifficulty(
-                            selectedDifficulty === difficulty ? null : difficulty
-                          )
-                        }
-                        className={`w-full text-left px-4 py-2 rounded-lg transition-colors flex items-center gap-3 ${
-                          selectedDifficulty === difficulty
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-foreground hover:bg-muted/80"
-                        }`}
-                      >
-                        {difficultyConfig[difficulty].icon}
-                        {difficulty}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Category Filter */}
-                <div>
-                  <h3 className="font-semibold text-foreground mb-3">Category</h3>
-                  <div className="space-y-2">
-                    {uniqueCategories.map((category) => (
-                      <button
-                        key={category}
-                        onClick={() =>
-                          setSelectedCategory(selectedCategory === category ? null : category)
-                        }
-                        className={`w-full text-left px-4 py-2 rounded-lg transition-colors flex items-center gap-3 ${
-                          selectedCategory === category
-                            ? "bg-secondary text-secondary-foreground"
-                            : "bg-muted text-foreground hover:bg-muted/80"
-                        }`}
-                      >
-                        <span>{categoryIcons[category as Category]}</span>
-                        {category}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Clear Filters */}
-              {(selectedDifficulty || selectedCategory) && (
-                <button
-                  onClick={() => {
-                    setSelectedDifficulty(null);
-                    setSelectedCategory(null);
-                  }}
-                  className="mt-4 w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Clear all filters
-                </button>
-              )}
-            </div>
-          )}
+          <div className="mt-8">
+            <FilterBar
+              filters={{ ...filters, query: queryDraft }}
+              categories={uniqueCategories}
+              difficulties={uniqueDifficulties}
+              onChange={(key, value) => {
+                if (key === "query") {
+                  setQueryDraft(value);
+                  return;
+                }
+                setFilter(key, value);
+              }}
+              onClear={() => {
+                setQueryDraft("");
+                clearFilters();
+              }}
+            />
+          </div>
         </div>
       </section>
 
-      {/* Results Section */}
       <section className="py-12 md:py-20">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-foreground">
-              {filteredProjects.length > 0
+              {loading
+                ? "Searching projects..."
+                : filteredProjects.length > 0
                 ? `Found ${filteredProjects.length} project${filteredProjects.length !== 1 ? "s" : ""}`
                 : "No projects found"}
             </h2>
             <p className="text-muted-foreground mt-1">
-              {searchQuery || selectedDifficulty || selectedCategory
+              {activeFilterCount > 0
                 ? "Try adjusting your filters to find more projects"
                 : "Explore all available projects"}
             </p>
+
+            {!loading && filteredProjects.length > 0 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredProjects.length)} of {filteredProjects.length}
+              </p>
+            )}
+
+            {activeFilterCount > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {filters.query && (
+                  <span className="px-3 py-1 rounded-full text-xs bg-muted text-foreground">Query: {filters.query}</span>
+                )}
+                {filters.difficulty && (
+                  <span className="px-3 py-1 rounded-full text-xs bg-muted text-foreground">Difficulty: {filters.difficulty}</span>
+                )}
+                {filters.category && (
+                  <span className="px-3 py-1 rounded-full text-xs bg-muted text-foreground">Category: {filters.category}</span>
+                )}
+              </div>
+            )}
           </div>
 
-          {filteredProjects.length > 0 ? (
+          {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((project) => (
-                <Link
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <ProjectCardSkeleton key={idx} />
+              ))}
+            </div>
+          ) : filteredProjects.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginatedProjects.map((project, index) => (
+                <motion.div
                   key={project.id}
-                  to={`/project/${project.id}`}
-                  className="group h-full"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, delay: index * 0.03 }}
                 >
-                  <div className="h-full flex flex-col p-6 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <span className="text-3xl">
-                        {categoryIcons[project.category as Category]}
-                      </span>
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${difficultyConfig[project.difficulty].bgColor} ${difficultyConfig[project.difficulty].color}`}>
-                        {difficultyConfig[project.difficulty].icon}
-                        {project.difficulty}
-                      </span>
+                  <div className="group h-full flex flex-col p-6 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 focus-within:ring-2 focus-within:ring-ring">
+                    <div className="flex items-start justify-between mb-4 gap-2">
+                      <span className="text-3xl">{categoryIcons[project.category as Category]}</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${difficultyConfig[project.difficulty].bgColor} ${difficultyConfig[project.difficulty].color}`}>
+                          {difficultyConfig[project.difficulty].icon}
+                          {project.difficulty}
+                        </span>
+                        <button
+                          aria-label={`Save ${project.title}`}
+                          onClick={() => {
+                            if (!canSave) {
+                              toast.error("Sign in to save projects");
+                              return;
+                            }
+                            const nowSaved = toggleSaved(project.id);
+                            toast.success(nowSaved ? "Project saved" : "Project removed");
+                          }}
+                          className={`p-2 rounded-lg border border-border hover:bg-muted ${isSaved(project.id) ? "text-red-500" : "text-muted-foreground"}`}
+                        >
+                          <Heart className={`w-4 h-4 ${isSaved(project.id) ? "fill-current" : ""}`} />
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                      {project.title}
-                    </h3>
+                    <Link to={`/project/${project.id}`} className="group h-full flex flex-col">
+                      <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                        {project.title}
+                      </h3>
 
-                    {/* Description */}
-                    <p className="text-sm text-muted-foreground mb-4 flex-1 line-clamp-3">
-                      {project.description}
-                    </p>
+                      <p className="text-sm text-muted-foreground mb-4 flex-1 line-clamp-3">
+                        {project.description}
+                      </p>
 
-                    {/* Category Badge */}
                     <div className="mb-4">
                       <span className="inline-block px-3 py-1 bg-muted text-muted-foreground text-xs rounded-full">
                         {project.category}
                       </span>
                     </div>
 
-                    {/* Footer */}
                     <div className="flex items-center justify-between pt-4 border-t border-border text-primary font-medium group-hover:gap-2 transition-all">
                       <span>Learn more</span>
                       <ChevronRight className="w-4 h-4" />
                     </div>
+                    </Link>
                   </div>
-                </Link>
+                </motion.div>
               ))}
-            </div>
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    disabled={safeCurrentPage === 1}
+                    className="px-3 py-2 rounded-lg border border-border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted"
+                  >
+                    Prev
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`min-w-10 px-3 py-2 rounded-lg border text-sm ${
+                        pageNumber === safeCurrentPage
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border hover:bg-muted"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                    disabled={safeCurrentPage === totalPages}
+                    className="px-3 py-2 rounded-lg border border-border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
-            <div className="text-center py-12">
-              <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No projects found</h3>
-              <p className="text-muted-foreground">
-                Try adjusting your search query or filters
-              </p>
+            <div>
+              <EmptyState query={filters.query} />
               <button
                 onClick={() => {
-                  setSearchQuery("");
-                  setSelectedDifficulty(null);
-                  setSelectedCategory(null);
+                  setQueryDraft("");
+                  setCurrentPage(1);
+                  clearFilters();
                 }}
                 className="mt-6 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity font-medium"
               >
@@ -244,6 +382,202 @@ export default function Index() {
           )}
         </div>
       </section>
+
+      <section id="about-projexplorer" className="py-12 md:py-16 border-t border-border/60">
+        <div className="container max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">About ProjeXplorer</h2>
+          <p className="mt-4 max-w-4xl text-muted-foreground leading-7">
+            ProjeXplorer is a structured project-building platform that helps developers move from learning concepts to shipping real-world applications.
+          </p>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Problem Statement</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Each project starts with a clear real-world use case so you know what problem you are solving.
+              </p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Execution Roadmap</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                You get a defined roadmap that breaks the build into practical steps from start to finish.
+              </p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Tech Stack</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Each project suggests a recommended stack so you can choose the right tools for the job.
+              </p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Portfolio Outcome</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Every project is designed to become a portfolio-ready result you can confidently showcase.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="learning-paths" className="py-12 md:py-16">
+        <div className="container max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Curated Learning Paths</h2>
+          <p className="mt-4 max-w-4xl text-muted-foreground leading-7">
+            Learning paths are designed as step-by-step skill progression tracks that help you move from beginner projects to advanced builds.
+          </p>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-primary">Level 1 - Beginner</p>
+              <p className="mt-2 text-sm text-muted-foreground">Project: Notes App</p>
+              <p className="mt-2 text-sm text-muted-foreground">Skills: CRUD, Local Storage, Basic UI</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-primary">Level 2 - Intermediate</p>
+              <p className="mt-2 text-sm text-muted-foreground">Project: Auth-Based Blog Platform</p>
+              <p className="mt-2 text-sm text-muted-foreground">Skills: JWT Auth, REST APIs, Database Design</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-primary">Level 3 - Advanced</p>
+              <p className="mt-2 text-sm text-muted-foreground">Project: SaaS Task Manager</p>
+              <p className="mt-2 text-sm text-muted-foreground">Skills: Role-based access, caching, scalability</p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Prerequisites</p>
+              <p className="mt-2 text-sm text-muted-foreground">Basic JavaScript, React fundamentals, or the baseline skills needed for the project.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Skills Covered</p>
+              <p className="mt-2 text-sm text-muted-foreground">Authentication, API design, state management, database design, and deployment.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Time Estimate</p>
+              <p className="mt-2 text-sm text-muted-foreground">Most projects include a practical estimate such as 8-12 hours or 1-2 weeks.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Difficulty Tag</p>
+              <p className="mt-2 text-sm text-muted-foreground">Beginner, Intermediate, or Advanced to help you choose the right challenge.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how-it-works" className="py-12 md:py-16">
+        <div className="container max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">How It Works</h2>
+          <p className="mt-4 text-muted-foreground max-w-4xl">
+            ProjeXplorer follows a detailed workflow: discover, build, validate, and showcase.
+          </p>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-primary">1. Discover</p>
+              <p className="mt-2 text-sm text-muted-foreground">Search and filter by difficulty, domain, tech stack, and keywords to find the right project for your level.</p>
+              <p className="mt-3 text-xs text-muted-foreground">Suggested filters: Web, AI, DevOps, React, Node, Python.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-primary">2. Build</p>
+              <p className="mt-2 text-sm text-muted-foreground">Every project page includes the problem statement, core features, stack options, and implementation steps.</p>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground list-disc pl-5">
+                <li>Setup project structure</li>
+                <li>Build backend APIs</li>
+                <li>Design frontend UI</li>
+                <li>Connect frontend and backend</li>
+                <li>Add testing</li>
+              </ul>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-primary">3. Validate</p>
+              <p className="mt-2 text-sm text-muted-foreground">Check the project with testing, documentation, and UX improvements so it feels production-aware.</p>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground list-disc pl-5">
+                <li>Unit testing</li>
+                <li>API testing</li>
+                <li>End-to-end flow validation</li>
+                <li>Architecture diagram</li>
+                <li>Database schema</li>
+              </ul>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-primary">4. Showcase</p>
+              <p className="mt-2 text-sm text-muted-foreground">Deploy the project, publish the repository, and explain the work in a recruiter-friendly story.</p>
+              <p className="mt-3 text-xs text-muted-foreground">Story format: Problem → Approach → Tech Stack → Impact</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="learning-blog" className="py-12 md:py-16 border-t border-border/60">
+        <div className="container max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Learning Blog</h2>
+          <p className="mt-4 text-muted-foreground max-w-4xl">
+            The Learning Blog will cover deeper technical thinking behind projects, the tradeoffs you make while building, and how to explain your work.
+          </p>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Project Breakdowns</p>
+              <p className="mt-2 text-sm text-muted-foreground">System architecture, feature prioritization, and scaling strategies.</p>
+              <p className="mt-3 text-xs text-muted-foreground">Example topics: Designing a Chat Application, Building a Scalable URL Shortener.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Engineering Guides</p>
+              <p className="mt-2 text-sm text-muted-foreground">Writing clean code, API design best practices, and deployment workflows with CI/CD basics.</p>
+              <p className="mt-3 text-xs text-muted-foreground">Example guides: How to deploy a full-stack app, common backend bugs and how to fix them.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Career-Focused Insights</p>
+              <p className="mt-2 text-sm text-muted-foreground">How to describe your project in resumes, interviews, and portfolios with strong action verbs and impact metrics.</p>
+              <p className="mt-3 text-xs text-muted-foreground">Recruiters look for clean UI, working demos, and structured code.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section id="contact" className="py-12 md:py-16">
+        <div className="container max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Contact</h2>
+          <p className="mt-4 text-muted-foreground max-w-3xl">
+            Want to suggest new project tracks, report an issue, or collaborate on content? Send the details so we can respond with the right context.
+          </p>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Best For</p>
+              <p className="mt-2 text-sm text-muted-foreground">Feature requests, bug reports, new project ideas, and collaboration opportunities.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Helpful Details</p>
+              <p className="mt-2 text-sm text-muted-foreground">Add the project title, category, expected behavior, and screenshots or links if relevant.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-border bg-card">
+              <p className="text-sm font-semibold text-foreground">Response Window</p>
+              <p className="mt-2 text-sm text-muted-foreground">Typical response time is 24-72 hours depending on request volume.</p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              href="mailto:zetfounder@gmail.com"
+              className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"
+            >
+              Email Us
+            </a>
+            <a
+              href="https://github.com/Sadwik09/project--xplorer"
+              target="_blank"
+              rel="noreferrer"
+              className="px-5 py-2.5 rounded-lg border border-border text-foreground hover:bg-muted transition-colors"
+            >
+              GitHub Repository
+            </a>
+          </div>
+        </div>
+      </section>
     </Layout>
+    </div>
+    </div>
   );
 }

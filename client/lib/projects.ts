@@ -5,7 +5,17 @@ export type Category =
   | "AI/ML"
   | "Backend"
   | "Desktop"
-  | "Data Science";
+  | "Data Science"
+  | "Cloud"
+  | "DevOps"
+  | "Cybersecurity"
+  | "Game Development"
+  | "Blockchain"
+  | "IoT"
+  | "AR/VR"
+  | "Automation"
+  | "UI/UX"
+  | "Open Source";
 
 export interface ProjectSection {
   title: string;
@@ -583,3 +593,234 @@ export const projects: Project[] = [
       "Developer tools are highly sought after. This project demonstrates your understanding of developer workflows and the problems developers face daily.",
   },
 ];
+
+type AdditionalProjectSeed = {
+  title: string;
+  description: string;
+  difficulty: Difficulty;
+  category: Category;
+  focus: string;
+};
+
+const categoryTechnologies: Record<Category, string[]> = {
+  "Web Development": ["React", "TypeScript", "Vite", "Tailwind CSS", "REST APIs"],
+  Mobile: ["React Native", "TypeScript", "Expo", "SQLite", "Push Notifications"],
+  "AI/ML": ["Python", "TensorFlow", "PyTorch", "Pandas", "FastAPI"],
+  Backend: ["Node.js", "Express", "PostgreSQL", "Redis", "Docker"],
+  Desktop: ["Electron", "TypeScript", "SQLite", "Node.js", "IPC"],
+  "Data Science": ["Python", "Pandas", "NumPy", "Matplotlib", "Jupyter"],
+  Cloud: ["AWS", "Terraform", "Docker", "Kubernetes", "GitHub Actions"],
+  DevOps: ["Docker", "Kubernetes", "GitHub Actions", "Prometheus", "Grafana"],
+  Cybersecurity: ["OWASP", "Burp Suite", "Nmap", "Python", "SIEM"],
+  "Game Development": ["Unity", "C#", "Godot", "Blender", "Game Physics"],
+  Blockchain: ["Solidity", "Hardhat", "Ethers.js", "IPFS", "TypeScript"],
+  IoT: ["MQTT", "Raspberry Pi", "Arduino", "Node.js", "InfluxDB"],
+  "AR/VR": ["Unity", "WebXR", "Three.js", "C#", "Spatial Audio"],
+  Automation: ["Python", "Playwright", "Selenium", "Cron", "APIs"],
+  "UI/UX": ["Figma", "Design Systems", "Accessibility", "React", "Storybook"],
+  "Open Source": ["Git", "GitHub", "TypeScript", "CI/CD", "Testing"],
+};
+
+const additionalProjectSeeds: AdditionalProjectSeed[] = [
+  { title: "Cloud Cost Optimizer Dashboard", description: "Track and reduce cloud spend with budgets, anomaly alerts, and service-level insights.", difficulty: "Intermediate", category: "Cloud", focus: "cost governance" },
+  { title: "Kubernetes Deployment Health Monitor", description: "Visualize pod, deployment, and service health across namespaces with historical uptime trends.", difficulty: "Advanced", category: "DevOps", focus: "cluster observability" },
+  { title: "SOC Incident Triage Assistant", description: "Prioritize security alerts and recommend next actions using severity and context scoring.", difficulty: "Advanced", category: "Cybersecurity", focus: "incident response" },
+  { title: "2D Roguelike Dungeon Crawler", description: "Design a procedural dungeon game with enemies, loot, and progression mechanics.", difficulty: "Intermediate", category: "Game Development", focus: "procedural gameplay" },
+  { title: "Smart Home Energy Analytics", description: "Analyze appliance usage from IoT sensors and suggest efficiency improvements.", difficulty: "Intermediate", category: "IoT", focus: "energy intelligence" },
+  { title: "Design System Token Manager", description: "Build a UI tool to manage colors, spacing, typography, and export tokens for apps.", difficulty: "Beginner", category: "UI/UX", focus: "design consistency" },
+  { title: "Open Source Contribution Tracker", description: "Track pull requests, review cycles, and contribution streaks across repositories.", difficulty: "Beginner", category: "Open Source", focus: "community contribution" },
+  { title: "Decentralized Voting DApp", description: "Create a secure voting application with wallet authentication and immutable vote records.", difficulty: "Advanced", category: "Blockchain", focus: "on-chain governance" },
+  { title: "CI Pipeline Failure Analyzer", description: "Summarize failing CI jobs and surface likely causes with remediation suggestions.", difficulty: "Intermediate", category: "DevOps", focus: "pipeline reliability" },
+  { title: "AR Interior Furniture Preview", description: "Place virtual furniture in real rooms to preview scale and style before purchase.", difficulty: "Advanced", category: "AR/VR", focus: "spatial shopping" },
+  { title: "Automated Invoice Processing Bot", description: "Extract fields from invoices and sync validated data into accounting systems.", difficulty: "Intermediate", category: "Automation", focus: "document automation" },
+  { title: "API Security Testing Workbench", description: "Test APIs against common vulnerabilities and generate actionable security reports.", difficulty: "Advanced", category: "Cybersecurity", focus: "API hardening" },
+  { title: "Serverless Image Moderation Pipeline", description: "Detect inappropriate media uploads using event-driven cloud functions and AI models.", difficulty: "Advanced", category: "Cloud", focus: "serverless moderation" },
+  { title: "Browser-Based 3D Product Configurator", description: "Allow users to customize products in 3D with materials, colors, and live pricing.", difficulty: "Advanced", category: "Web Development", focus: "interactive commerce" },
+  { title: "Gamified Habit Tracker Mobile App", description: "Track habits with streaks, levels, and rewards to boost long-term consistency.", difficulty: "Beginner", category: "Mobile", focus: "behavior design" },
+  { title: "Edge Log Aggregation Service", description: "Collect distributed logs from edge nodes and centralize searchable observability data.", difficulty: "Advanced", category: "Backend", focus: "distributed logging" },
+  { title: "AI Resume Feedback Coach", description: "Assess resume quality and suggest targeted improvements for role-specific applications.", difficulty: "Intermediate", category: "AI/ML", focus: "career optimization" },
+  { title: "Personal Knowledge Graph", description: "Organize notes as connected ideas with backlink traversal and semantic search.", difficulty: "Intermediate", category: "Data Science", focus: "knowledge discovery" },
+  { title: "Desktop Password Vault", description: "Build an encrypted local vault for credentials with secure search and tagging.", difficulty: "Advanced", category: "Desktop", focus: "local security" },
+  { title: "Realtime Pair Programming Room", description: "Enable shared editing, chat, and terminal streams for collaborative coding sessions.", difficulty: "Advanced", category: "Web Development", focus: "live collaboration" },
+  { title: "Container Drift Detection Tool", description: "Detect configuration drift between desired and running container environments.", difficulty: "Intermediate", category: "DevOps", focus: "infrastructure compliance" },
+  { title: "Fraud Pattern Detector", description: "Identify suspicious transaction behavior using anomaly detection and explainable signals.", difficulty: "Advanced", category: "AI/ML", focus: "risk analytics" },
+  { title: "Web Accessibility Audit Dashboard", description: "Run accessibility scans and track WCAG compliance over time for your sites.", difficulty: "Intermediate", category: "UI/UX", focus: "inclusive design" },
+  { title: "IoT Fleet Firmware Rollout Manager", description: "Schedule, monitor, and rollback firmware updates for device fleets safely.", difficulty: "Advanced", category: "IoT", focus: "device operations" },
+  { title: "Contributor Onboarding Portal", description: "Create guided issue workflows and starter tasks for new open source contributors.", difficulty: "Beginner", category: "Open Source", focus: "maintainer workflow" },
+  { title: "NFT Collection Analytics Studio", description: "Analyze volume, holder concentration, and rarity trends for NFT collections.", difficulty: "Intermediate", category: "Blockchain", focus: "market intelligence" },
+  { title: "Cloud Architecture Diagram Generator", description: "Generate cloud architecture diagrams from simple YAML definitions.", difficulty: "Beginner", category: "Cloud", focus: "architecture documentation" },
+  { title: "Release Notes Auto Writer", description: "Create semantic release notes from commit history and pull request labels.", difficulty: "Beginner", category: "Automation", focus: "release automation" },
+  { title: "Unity Parkour Prototype", description: "Build a first-person movement system with wall-running and vault mechanics.", difficulty: "Intermediate", category: "Game Development", focus: "movement systems" },
+  { title: "Threat Modeling Workspace", description: "Map trust boundaries, assets, and attack paths for product security planning.", difficulty: "Intermediate", category: "Cybersecurity", focus: "secure design" },
+  { title: "VR Team Retrospective Room", description: "Host sprint retrospectives in immersive VR spaces with collaborative boards.", difficulty: "Advanced", category: "AR/VR", focus: "immersive teamwork" },
+  { title: "MLOps Experiment Registry", description: "Track model runs, metrics, artifacts, and deployment readiness in one place.", difficulty: "Advanced", category: "DevOps", focus: "model lifecycle" },
+  { title: "Low-Code Workflow Builder", description: "Build drag-and-drop workflow automation with triggers, conditions, and actions.", difficulty: "Advanced", category: "Automation", focus: "workflow orchestration" },
+  { title: "Mobile Offline Field Survey App", description: "Collect field data offline with sync support and geotagging.", difficulty: "Intermediate", category: "Mobile", focus: "offline data capture" },
+  { title: "Data Catalog Explorer", description: "Create searchable metadata catalogs for datasets, owners, and lineage.", difficulty: "Intermediate", category: "Data Science", focus: "data governance" },
+  { title: "Cloud Backup Policy Engine", description: "Define, validate, and enforce backup policies across cloud workloads.", difficulty: "Advanced", category: "Cloud", focus: "resilience policy" },
+  { title: "Desktop Markdown Research Notebook", description: "Create a local-first research notebook with tags, links, and preview mode.", difficulty: "Beginner", category: "Desktop", focus: "research workflow" },
+  { title: "Headless Commerce API", description: "Implement product, cart, and checkout APIs for storefront integrations.", difficulty: "Advanced", category: "Backend", focus: "commerce backend" },
+  { title: "Skill Tree Learning Platform", description: "Design a progression-based platform where users unlock projects by milestones.", difficulty: "Intermediate", category: "Web Development", focus: "learning progression" },
+  { title: "Privacy Consent Management Platform", description: "Manage cookie consent records and compliance workflows for global regulations.", difficulty: "Advanced", category: "Cybersecurity", focus: "privacy compliance" },
+  { title: "Token-Gated Community Hub", description: "Restrict access to exclusive content based on on-chain wallet holdings.", difficulty: "Intermediate", category: "Blockchain", focus: "token access" },
+  { title: "Drone Telemetry Dashboard", description: "Stream and visualize drone metrics including altitude, battery, and GPS pathing.", difficulty: "Advanced", category: "IoT", focus: "telemetry monitoring" },
+  { title: "Prompt Library and Evaluator", description: "Store AI prompts, evaluate outputs, and compare prompt performance by use case.", difficulty: "Intermediate", category: "AI/ML", focus: "prompt engineering" },
+  { title: "SaaS Trial Conversion Funnel Analyzer", description: "Track onboarding events and identify friction points in trial conversion journeys.", difficulty: "Beginner", category: "Data Science", focus: "product analytics" },
+  { title: "Open Source Maintainer Dashboard", description: "Monitor issue velocity, stale threads, and contributor response times.", difficulty: "Intermediate", category: "Open Source", focus: "repo health" },
+  { title: "In-Game Economy Simulator", description: "Model virtual item pricing, sinks, and inflation to balance a game economy.", difficulty: "Advanced", category: "Game Development", focus: "economy balancing" },
+  { title: "Design Critique Collaboration Board", description: "Build a shared board for async design feedback with threaded annotations.", difficulty: "Beginner", category: "UI/UX", focus: "feedback workflow" },
+  { title: "Automated QA Regression Runner", description: "Run scheduled regression suites and publish trend reports with flaky test flags.", difficulty: "Intermediate", category: "Automation", focus: "quality assurance" },
+  { title: "Container Security Baseline Scanner", description: "Scan container images for CVEs and policy violations before deployment.", difficulty: "Advanced", category: "DevOps", focus: "supply chain security" },
+  { title: "Cloud Secrets Rotation Service", description: "Automate secret rotation workflows with audit logs and expiry enforcement.", difficulty: "Advanced", category: "Cloud", focus: "credential hygiene" },
+  { title: "XR Museum Tour Guide", description: "Create guided AR/VR museum tours with narration and interactive points of interest.", difficulty: "Intermediate", category: "AR/VR", focus: "immersive education" },
+];
+
+const additionalProjects: Project[] = additionalProjectSeeds.map((seed, index) => {
+  const technologies = categoryTechnologies[seed.category];
+
+  return {
+    id: String(projects.length + index + 1),
+    title: seed.title,
+    description: seed.description,
+    difficulty: seed.difficulty,
+    category: seed.category,
+    overview:
+      `${seed.title} is a focused build that helps you practice ${seed.focus} through practical implementation and measurable outcomes.`,
+    whyUseful:
+      `This project is useful because it strengthens hands-on skills in ${seed.category} while producing a portfolio-ready artifact aligned with real team workflows.`,
+    stepByStep: [
+      `Define clear requirements and success metrics for ${seed.title}`,
+      "Design architecture and choose tooling for fast iteration",
+      "Build the first working slice with core functionality",
+      "Add data validation, error handling, and user feedback",
+      "Implement filtering/search or workflow controls where relevant",
+      "Improve performance, accessibility, and developer ergonomics",
+      "Add meaningful tests and document key technical decisions",
+      "Prepare deployment and monitor outcomes after release",
+    ],
+    technologies,
+    keyFeatures: [
+      "Production-minded architecture",
+      "Clear user workflow",
+      "Performance and reliability considerations",
+      "Observability and reporting",
+      "Scalable data model",
+      "Testing-friendly structure",
+    ],
+    expectedOutcome:
+      `You will complete a deployable ${seed.category} project with practical features, documentation, and a strong implementation story for interviews.`,
+    realWorldImpact:
+      `By finishing this project, you demonstrate execution depth in ${seed.category} and the ability to ship software that solves concrete problems.`,
+  };
+});
+
+projects.push(...additionalProjects);
+
+const extraProjectPrefixes = [
+  "Scalable",
+  "Intelligent",
+  "Realtime",
+  "Modular",
+  "Autonomous",
+  "Interactive",
+  "Secure",
+  "Adaptive",
+  "Collaborative",
+  "Next-Gen",
+];
+
+const extraProjectDomains = [
+  "Analytics",
+  "Monitoring",
+  "Automation",
+  "Collaboration",
+  "Security",
+  "Optimization",
+  "Orchestration",
+  "Simulation",
+  "Discovery",
+  "Intelligence",
+];
+
+const extraProjectProducts = [
+  "Platform",
+  "Hub",
+  "Dashboard",
+  "Engine",
+  "Workbench",
+  "Studio",
+  "Portal",
+  "Toolkit",
+  "Assistant",
+  "Manager",
+];
+
+const extraProjectCategories: Category[] = [
+  "Web Development",
+  "Mobile",
+  "AI/ML",
+  "Backend",
+  "Desktop",
+  "Data Science",
+  "Cloud",
+  "DevOps",
+  "Cybersecurity",
+  "Game Development",
+  "Blockchain",
+  "IoT",
+  "AR/VR",
+  "Automation",
+  "UI/UX",
+  "Open Source",
+];
+
+const extraProjectDifficulties: Difficulty[] = ["Beginner", "Intermediate", "Advanced"];
+const extraProjectTotal = 100;
+
+const generatedExtraProjects: Project[] = Array.from({ length: extraProjectTotal }, (_, index) => {
+  const prefix = extraProjectPrefixes[index % extraProjectPrefixes.length];
+  const domain = extraProjectDomains[Math.floor(index / extraProjectPrefixes.length) % extraProjectDomains.length];
+  const product = extraProjectProducts[Math.floor(index / (extraProjectPrefixes.length * extraProjectDomains.length)) % extraProjectProducts.length];
+  const category = extraProjectCategories[index % extraProjectCategories.length];
+  const difficulty = extraProjectDifficulties[index % extraProjectDifficulties.length];
+  const title = `${prefix} ${domain} ${product} ${index + 1}`;
+  const technologies = categoryTechnologies[category];
+
+  return {
+    id: String(projects.length + index + 1),
+    title,
+    description:
+      `Build ${title.toLowerCase()} to solve practical ${domain.toLowerCase()} problems with a production-ready architecture.`,
+    difficulty,
+    category,
+    overview:
+      `${title} helps you practice applied engineering by turning ${category.toLowerCase()} concepts into an end-to-end project with clear outcomes.`,
+    whyUseful:
+      `This project improves your ability to ship reliable ${category.toLowerCase()} solutions while balancing architecture, usability, and maintainability.`,
+    stepByStep: [
+      `Define scope and success metrics for ${title}`,
+      "Sketch data flow and core user interactions",
+      "Implement the first functional version",
+      "Add validation, observability, and edge-case handling",
+      "Improve performance and refine the experience",
+      "Document architecture and release notes",
+      "Create tests for critical workflows",
+      "Prepare deployment and iterate with feedback",
+    ],
+    technologies,
+    keyFeatures: [
+      "Clear and scalable architecture",
+      "Structured workflows and controls",
+      "Performance-aware implementation",
+      "Meaningful observability signals",
+      "Reusable and testable modules",
+      "Deployment-ready setup",
+    ],
+    expectedOutcome:
+      `A complete ${category.toLowerCase()} project demonstrating implementation depth, clean structure, and real portfolio value.`,
+    realWorldImpact:
+      `Completing this project proves you can deliver measurable outcomes and collaborate effectively on modern software systems.`,
+  };
+});
+
+projects.push(...generatedExtraProjects);

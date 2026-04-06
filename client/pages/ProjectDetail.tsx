@@ -1,7 +1,10 @@
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import toast from "react-hot-toast";
 import Layout from "@/components/Layout";
 import { projects } from "@/lib/projects";
-import { ChevronLeft, BookOpen, Zap, Brain, Lightbulb, Target, Rocket } from "lucide-react";
+import { useSavedProjects } from "@/hooks/useSavedProjects";
+import { ChevronLeft, BookOpen, Zap, Brain, Lightbulb, Target, Rocket, Heart } from "lucide-react";
 
 const difficultyConfig = {
   Beginner: { color: "text-green-600", bgColor: "bg-green-100" },
@@ -21,6 +24,7 @@ const categoryIcons: Record<string, string> = {
 export default function ProjectDetail() {
   const { id } = useParams();
   const project = projects.find((p) => p.id === id);
+  const { isSaved, toggleSaved, canSave } = useSavedProjects();
 
   if (!project) {
     return (
@@ -44,6 +48,11 @@ export default function ProjectDetail() {
 
   return (
     <Layout>
+      <Helmet>
+        <title>{project.title} | ProjExplorer</title>
+        <meta name="description" content={project.description} />
+      </Helmet>
+
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background border-b border-border">
         <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
@@ -70,6 +79,20 @@ export default function ProjectDetail() {
                 <span className="inline-block px-4 py-2 bg-muted text-muted-foreground rounded-full text-sm font-medium">
                   {project.category}
                 </span>
+                <button
+                  onClick={() => {
+                    if (!canSave) {
+                      toast.error("Sign in to save projects");
+                      return;
+                    }
+                    const next = toggleSaved(project.id);
+                    toast.success(next ? "Project saved" : "Project removed");
+                  }}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border border-border ${isSaved(project.id) ? "text-red-500" : "text-foreground"}`}
+                >
+                  <Heart className={`w-4 h-4 ${isSaved(project.id) ? "fill-current" : ""}`} />
+                  {isSaved(project.id) ? "Saved" : "Save"}
+                </button>
               </div>
             </div>
           </div>
@@ -184,16 +207,6 @@ export default function ProjectDetail() {
           </div>
         </section>
 
-        {/* Call to Action */}
-        <div className="mt-20 p-8 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl border border-primary/20 text-center">
-          <h3 className="text-2xl font-bold text-foreground mb-4">Ready to build this project?</h3>
-          <p className="text-lg text-muted-foreground mb-8">
-            Start building and learning by implementing this project step by step. Each step will teach you valuable skills and bring you closer to mastery.
-          </p>
-          <button className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-bold hover:opacity-90 transition-opacity">
-            Start Building
-          </button>
-        </div>
       </div>
     </Layout>
   );
