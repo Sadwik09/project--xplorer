@@ -169,30 +169,30 @@
 }
 
 .home-cinematic .bg-card {
-  background: rgba(255, 255, 255, 0.06) !important;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: color-mix(in oklab, hsl(var(--background)) 88%, white 12%) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .home-cinematic .border-border,
 .home-cinematic [class*="border-border"] {
-  border-color: rgba(255, 255, 255, 0.18) !important;
+  border-color: color-mix(in oklab, hsl(var(--border)) 90%, white 10%) !important;
 }
 
 .home-cinematic .text-primary {
-  color: hsl(var(--foreground)) !important;
+  color: hsl(var(--primary)) !important;
 }
 
 .home-cinematic .bg-primary {
-  background: rgba(255, 255, 255, 0.14) !important;
+  background: hsl(var(--primary)) !important;
 }
 
 .home-cinematic .text-primary-foreground {
-  color: hsl(var(--foreground)) !important;
+  color: hsl(var(--primary-foreground)) !important;
 }
 
 .home-cinematic .hover\:bg-muted:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: color-mix(in oklab, hsl(var(--muted)) 90%, white 10%) !important;
 }
 
 .loading-screen-theme {

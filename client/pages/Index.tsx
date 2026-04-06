@@ -1,19 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { AnimatePresence, motion } from "framer-motion";
-import toast from "react-hot-toast";
+import { useTheme } from "next-themes";
 import Layout from "@/components/Layout";
 import LoadingScreen from "@/components/LoadingScreen";
 import { projects, Category, Difficulty } from "@/lib/projects";
 import { useFilters } from "@/hooks/useFilters";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useProjects } from "@/hooks/useProjects";
-import { useSavedProjects } from "@/hooks/useSavedProjects";
 import FilterBar from "@/components/FilterBar";
 import ProjectCardSkeleton from "@/components/ProjectCardSkeleton";
 import EmptyState from "@/components/EmptyState";
-import { ChevronRight, Zap, BookOpen, Brain, Heart } from "lucide-react";
+import { ChevronRight, Zap, BookOpen, Brain, Sun, Moon } from "lucide-react";
 
 const difficultyConfig: Record<Difficulty, { color: string; bgColor: string; icon: React.ReactNode }> = {
   Beginner: {
@@ -56,8 +55,10 @@ const ITEMS_PER_PAGE = 9;
 
 export default function Index() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const { filters, setFilter, clearFilters } = useFilters();
-  const [showMainHome, setShowMainHome] = useState(false);
+  const [showMainHome, setShowMainHome] = useState(Boolean(location.state?.showMainHome));
   const [isLoading, setIsLoading] = useState(false);
   const [queryDraft, setQueryDraft] = useState(filters.query);
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,7 +69,12 @@ export default function Index() {
     [filters, debouncedQuery],
   );
   const { projects: filteredProjects, loading } = useProjects(effectiveFilters);
-  const { isSaved, toggleSaved, canSave } = useSavedProjects();
+
+  useEffect(() => {
+    if (location.state?.showMainHome) {
+      setShowMainHome(true);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     setQueryDraft(filters.query);
@@ -111,6 +117,13 @@ export default function Index() {
   const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
+  const visiblePageGroupSize = 5;
+  const visiblePageStart = Math.floor((safeCurrentPage - 1) / visiblePageGroupSize) * visiblePageGroupSize + 1;
+  const visiblePageEnd = Math.min(visiblePageStart + visiblePageGroupSize - 1, totalPages);
+  const visiblePageNumbers = Array.from(
+    { length: visiblePageEnd - visiblePageStart + 1 },
+    (_, index) => visiblePageStart + index,
+  );
 
   if (!showMainHome) {
     return (
@@ -146,6 +159,15 @@ export default function Index() {
                 >
                   ProjeXplorer
                 </p>
+
+                <button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-4 py-2 text-sm font-medium text-foreground shadow-sm backdrop-blur-md hover:bg-muted transition-colors"
+                  aria-label="Toggle theme"
+                >
+                  {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  {theme === "dark" ? "Light" : "Dark"}
+                </button>
               </nav>
             </header>
 
@@ -164,6 +186,7 @@ export default function Index() {
 
               <button
                 onClick={() => {
+                  navigate("/", { state: { showMainHome: true } });
                   setShowMainHome(true);
                   setIsLoading(true);
                 }}
@@ -179,7 +202,7 @@ export default function Index() {
   }
 
   return (
-    <div className="cinematic-theme home-cinematic min-h-screen bg-background text-foreground">
+    <div className="home-cinematic min-h-screen bg-background text-foreground">
     <AnimatePresence mode="wait">
       {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
     </AnimatePresence>
@@ -284,26 +307,10 @@ export default function Index() {
                   <div className="group h-full flex flex-col p-6 bg-card border border-border rounded-xl hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 focus-within:ring-2 focus-within:ring-ring">
                     <div className="flex items-start justify-between mb-4 gap-2">
                       <span className="text-3xl">{categoryIcons[project.category as Category]}</span>
-                      <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${difficultyConfig[project.difficulty].bgColor} ${difficultyConfig[project.difficulty].color}`}>
-                          {difficultyConfig[project.difficulty].icon}
-                          {project.difficulty}
-                        </span>
-                        <button
-                          aria-label={`Save ${project.title}`}
-                          onClick={() => {
-                            if (!canSave) {
-                              toast.error("Sign in to save projects");
-                              return;
-                            }
-                            const nowSaved = toggleSaved(project.id);
-                            toast.success(nowSaved ? "Project saved" : "Project removed");
-                          }}
-                          className={`p-2 rounded-lg border border-border hover:bg-muted ${isSaved(project.id) ? "text-red-500" : "text-muted-foreground"}`}
-                        >
-                          <Heart className={`w-4 h-4 ${isSaved(project.id) ? "fill-current" : ""}`} />
-                        </button>
-                      </div>
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${difficultyConfig[project.difficulty].bgColor} ${difficultyConfig[project.difficulty].color}`}>
+                        {difficultyConfig[project.difficulty].icon}
+                        {project.difficulty}
+                      </span>
                     </div>
 
                     <Link to={`/project/${project.id}`} className="group h-full flex flex-col">
@@ -341,7 +348,7 @@ export default function Index() {
                     Prev
                   </button>
 
-                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNumber) => (
+                  {visiblePageNumbers.map((pageNumber) => (
                     <button
                       key={pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
