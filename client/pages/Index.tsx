@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { AnimatePresence, motion } from "framer-motion";
-import { useTheme } from "next-themes";
 import Layout from "@/components/Layout";
 import LoadingScreen from "@/components/LoadingScreen";
 import { projects, Category, Difficulty } from "@/lib/projects";
@@ -12,7 +11,7 @@ import { useProjects } from "@/hooks/useProjects";
 import FilterBar from "@/components/FilterBar";
 import ProjectCardSkeleton from "@/components/ProjectCardSkeleton";
 import EmptyState from "@/components/EmptyState";
-import { ChevronRight, Zap, BookOpen, Brain, Sun, Moon } from "lucide-react";
+import { ChevronRight, Zap, BookOpen, Brain } from "lucide-react";
 
 const difficultyConfig: Record<Difficulty, { color: string; bgColor: string; icon: React.ReactNode }> = {
   Beginner: {
@@ -56,12 +55,12 @@ const ITEMS_PER_PAGE = 9;
 export default function Index() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
   const { filters, setFilter, clearFilters } = useFilters();
   const [showMainHome, setShowMainHome] = useState(Boolean(location.state?.showMainHome));
   const [isLoading, setIsLoading] = useState(false);
   const [queryDraft, setQueryDraft] = useState(filters.query);
   const [currentPage, setCurrentPage] = useState(1);
+  const [gotoPageInput, setGotoPageInput] = useState("");
   const debouncedQuery = useDebounce(queryDraft, 300);
 
   const effectiveFilters = useMemo(
@@ -159,15 +158,6 @@ export default function Index() {
                 >
                   ProjeXplorer
                 </p>
-
-                <button
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-4 py-2 text-sm font-medium text-foreground shadow-sm backdrop-blur-md hover:bg-muted transition-colors"
-                  aria-label="Toggle theme"
-                >
-                  {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                  {theme === "dark" ? "Light" : "Dark"}
-                </button>
               </nav>
             </header>
 
@@ -176,12 +166,12 @@ export default function Index() {
                 className="animate-fade-rise max-w-7xl text-5xl font-normal leading-[0.95] tracking-[-2.46px] text-foreground sm:text-7xl md:text-8xl"
                 style={{ fontFamily: "'Instrument Serif', serif" }}
               >
-                Discover Ideas. <em className="not-italic text-muted-foreground">Learn. Build.</em>
+                Discover Ideas. <em className="not-italic text-muted-foreground">Explore Projects.</em>
               </h1>
 
               <p className="animate-fade-rise-delay mt-8 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                Overcome analysis paralysis. Explore well-structured project ideas with step-by-step guides
-                that help you learn meaningful skills while building real applications.
+                Overcome analysis paralysis. Explore well-structured project ideas tailored to your interests,
+                preferred technologies, and current skill level.
               </p>
 
               <button
@@ -210,10 +200,10 @@ export default function Index() {
     <div style={{ opacity: isLoading ? 0 : 1, transition: "opacity 0.5s ease-out" }}>
     <Layout>
       <Helmet>
-        <title>ProjeXplorer | Discover, Learn, Build</title>
+        <title>ProjeXplorer | Discover Projects</title>
         <meta
           name="description"
-          content="Browse curated project ideas by difficulty, category, and technologies to build your developer portfolio."
+          content="Browse curated project ideas by difficulty, category, and technologies."
         />
       </Helmet>
 
@@ -222,11 +212,11 @@ export default function Index() {
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
               Discover Ideas.
-              <span className="text-primary"> Learn. Build.</span>
+              <span className="text-primary"> Explore Projects.</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8">
-              Overcome analysis paralysis. Explore well-structured project ideas with step-by-step guides
-              that help you learn meaningful skills while building real applications.
+              Overcome analysis paralysis. Explore well-structured project ideas tailored to your interests,
+              preferred technologies, and current skill level.
             </p>
           </div>
 
@@ -339,36 +329,74 @@ export default function Index() {
               </div>
 
               {totalPages > 1 && (
-                <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-                  <button
-                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                    disabled={safeCurrentPage === 1}
-                    className="px-3 py-2 rounded-lg border border-border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted"
-                  >
-                    Prev
-                  </button>
-
-                  {visiblePageNumbers.map((pageNumber) => (
+                <div className="mt-10 flex flex-col items-center justify-center gap-4">
+                  <div className="flex flex-wrap items-center justify-center gap-2">
                     <button
-                      key={pageNumber}
-                      onClick={() => setCurrentPage(pageNumber)}
-                      className={`min-w-10 px-3 py-2 rounded-lg border text-sm ${
-                        pageNumber === safeCurrentPage
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "border-border hover:bg-muted"
-                      }`}
+                      onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                      disabled={safeCurrentPage === 1}
+                      className="px-3 py-2 rounded-lg border border-border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted"
                     >
-                      {pageNumber}
+                      Prev
                     </button>
-                  ))}
 
-                  <button
-                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                    disabled={safeCurrentPage === totalPages}
-                    className="px-3 py-2 rounded-lg border border-border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted"
-                  >
-                    Next
-                  </button>
+                    {visiblePageNumbers.map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        onClick={() => setCurrentPage(pageNumber)}
+                        className={`min-w-10 px-3 py-2 rounded-lg border text-sm ${
+                          pageNumber === safeCurrentPage
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-border hover:bg-muted"
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                      disabled={safeCurrentPage === totalPages}
+                      className="px-3 py-2 rounded-lg border border-border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted"
+                    >
+                      Next
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="goto-page" className="text-sm font-medium text-foreground">
+                      Page No:
+                    </label>
+                    <input
+                      id="goto-page"
+                      type="number"
+                      min="1"
+                      max={totalPages}
+                      value={gotoPageInput}
+                      onChange={(e) => setGotoPageInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const pageNum = parseInt(gotoPageInput, 10);
+                          if (pageNum >= 1 && pageNum <= totalPages) {
+                            setCurrentPage(pageNum);
+                            setGotoPageInput("");
+                          }
+                        }
+                      }}
+                      className="w-16 px-3 py-2 rounded-lg border border-border text-sm"
+                    />
+                    <button
+                      onClick={() => {
+                        const pageNum = parseInt(gotoPageInput, 10);
+                        if (pageNum >= 1 && pageNum <= totalPages) {
+                          setCurrentPage(pageNum);
+                          setGotoPageInput("");
+                        }
+                      }}
+                      className="px-3 py-2 rounded-lg border border-border text-sm hover:bg-muted"
+                    >
+                      Go
+                    </button>
+                  </div>
                 </div>
               )}
             </>
@@ -390,136 +418,11 @@ export default function Index() {
         </div>
       </section>
 
-      <section id="about-projexplorer" className="py-12 md:py-16 border-t border-border/60">
-        <div className="container max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">About ProjeXplorer</h2>
-          <p className="mt-4 max-w-4xl text-muted-foreground leading-7">
-            ProjeXplorer is a structured project-building platform that helps developers move from learning concepts to shipping real-world applications.
-          </p>
-
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground">Problem Statement</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Each project starts with a clear real-world use case so you know what problem you are solving.
-              </p>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground">Execution Roadmap</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                You get a defined roadmap that breaks the build into practical steps from start to finish.
-              </p>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground">Tech Stack</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Each project suggests a recommended stack so you can choose the right tools for the job.
-              </p>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground">Portfolio Outcome</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Every project is designed to become a portfolio-ready result you can confidently showcase.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="learning-paths" className="py-12 md:py-16">
-        <div className="container max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Curated Learning Paths</h2>
-          <p className="mt-4 max-w-4xl text-muted-foreground leading-7">
-            Learning paths are designed as step-by-step skill progression tracks that help you move from beginner projects to advanced builds.
-          </p>
-
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-primary">Level 1 - Beginner</p>
-              <p className="mt-2 text-sm text-muted-foreground">Project: Notes App</p>
-              <p className="mt-2 text-sm text-muted-foreground">Skills: CRUD, Local Storage, Basic UI</p>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-primary">Level 2 - Intermediate</p>
-              <p className="mt-2 text-sm text-muted-foreground">Project: Auth-Based Blog Platform</p>
-              <p className="mt-2 text-sm text-muted-foreground">Skills: JWT Auth, REST APIs, Database Design</p>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-primary">Level 3 - Advanced</p>
-              <p className="mt-2 text-sm text-muted-foreground">Project: SaaS Task Manager</p>
-              <p className="mt-2 text-sm text-muted-foreground">Skills: Role-based access, caching, scalability</p>
-            </div>
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground">Prerequisites</p>
-              <p className="mt-2 text-sm text-muted-foreground">Basic JavaScript, React fundamentals, or the baseline skills needed for the project.</p>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground">Skills Covered</p>
-              <p className="mt-2 text-sm text-muted-foreground">Authentication, API design, state management, database design, and deployment.</p>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground">Time Estimate</p>
-              <p className="mt-2 text-sm text-muted-foreground">Most projects include a practical estimate such as 8-12 hours or 1-2 weeks.</p>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-foreground">Difficulty Tag</p>
-              <p className="mt-2 text-sm text-muted-foreground">Beginner, Intermediate, or Advanced to help you choose the right challenge.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="how-it-works" className="py-12 md:py-16">
-        <div className="container max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">How It Works</h2>
-          <p className="mt-4 text-muted-foreground max-w-4xl">
-            ProjeXplorer follows a detailed workflow: discover, build, validate, and showcase.
-          </p>
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-primary">1. Discover</p>
-              <p className="mt-2 text-sm text-muted-foreground">Search and filter by difficulty, domain, tech stack, and keywords to find the right project for your level.</p>
-              <p className="mt-3 text-xs text-muted-foreground">Suggested filters: Web, AI, DevOps, React, Node, Python.</p>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-primary">2. Build</p>
-              <p className="mt-2 text-sm text-muted-foreground">Every project page includes the problem statement, core features, stack options, and implementation steps.</p>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground list-disc pl-5">
-                <li>Setup project structure</li>
-                <li>Build backend APIs</li>
-                <li>Design frontend UI</li>
-                <li>Connect frontend and backend</li>
-                <li>Add testing</li>
-              </ul>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-primary">3. Validate</p>
-              <p className="mt-2 text-sm text-muted-foreground">Check the project with testing, documentation, and UX improvements so it feels production-aware.</p>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground list-disc pl-5">
-                <li>Unit testing</li>
-                <li>API testing</li>
-                <li>End-to-end flow validation</li>
-                <li>Architecture diagram</li>
-                <li>Database schema</li>
-              </ul>
-            </div>
-            <div className="p-5 rounded-xl border border-border bg-card">
-              <p className="text-sm font-semibold text-primary">4. Showcase</p>
-              <p className="mt-2 text-sm text-muted-foreground">Deploy the project, publish the repository, and explain the work in a recruiter-friendly story.</p>
-              <p className="mt-3 text-xs text-muted-foreground">Story format: Problem → Approach → Tech Stack → Impact</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section id="learning-blog" className="py-12 md:py-16 border-t border-border/60">
         <div className="container max-w-7xl mx-auto px-4">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground">Learning Blog</h2>
           <p className="mt-4 text-muted-foreground max-w-4xl">
-            The Learning Blog will cover deeper technical thinking behind projects, the tradeoffs you make while building, and how to explain your work.
+            The Learning Blog will cover deeper technical thinking behind projects, technical tradeoffs, and how to explain your work.
           </p>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">

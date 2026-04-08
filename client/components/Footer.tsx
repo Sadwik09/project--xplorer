@@ -17,7 +17,7 @@ export default function Footer() {
             </div>
 
             <p className="mt-6 text-muted-foreground text-base leading-7 max-w-sm">
-              Build portfolio-ready projects with clear paths, practical scope, and modern engineering standards.
+              Explore curated software project ideas across categories, technologies, and difficulty levels.
             </p>
 
             <div className="mt-8 flex items-center gap-3">
@@ -53,12 +53,6 @@ export default function Footer() {
             <h4 className="text-xs tracking-[0.18em] font-semibold text-foreground/80 uppercase mb-6">Company</h4>
             <ul className="space-y-3 text-muted-foreground">
               <li>
-                <Link to="/#about-projexplorer" className="hover:text-primary transition-colors">About ProjExplorer</Link>
-              </li>
-              <li>
-                <Link to="/#how-it-works" className="hover:text-primary transition-colors">How It Works</Link>
-              </li>
-              <li>
                 <Link to="/#learning-blog" className="hover:text-primary transition-colors">Learning Blog</Link>
               </li>
               <li>
@@ -72,9 +66,6 @@ export default function Footer() {
             <ul className="space-y-3 text-muted-foreground">
               <li>
                 <Link to="/" className="hover:text-primary transition-colors">All Projects</Link>
-              </li>
-              <li>
-                <Link to="/saved" className="hover:text-primary transition-colors">Saved Projects</Link>
               </li>
               <li>
                 <a href="#" className="hover:text-primary transition-colors">Categories</a>
@@ -102,7 +93,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-14 border-t border-border pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-muted-foreground">
-          <p className="text-sm">© {currentYear} ProjExplorer Inc. All rights reserved.</p>
+          <p className="text-sm">© {currentYear} ProjeXplorer Inc. All rights reserved.</p>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-7 text-sm">
             <p className="inline-flex items-center gap-2">
               <MapPin className="w-4 h-4" />
