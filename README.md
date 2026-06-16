@@ -4,7 +4,7 @@ ProjeXplorer is a full-stack learning platform that helps developers discover pr
 
 ## Live Demo
 
-🚀 Visit the project: [Project Xplorerr](https://projectxplorerr.netlify.app/)
+🚀 Visit the project: [ProjeXplorer](https://projectxplorerr.netlify.app/)
 
 ## What It Does
 
