@@ -66,7 +66,7 @@ pnpm install
 pnpm dev
 ```
 
-App runs on http://localhost:8080 in development.
+App runs on projectxplorerr.netlify.app/ in development.
 
 ## Scripts
 
