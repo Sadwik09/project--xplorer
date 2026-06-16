@@ -66,7 +66,7 @@ pnpm install
 pnpm dev
 ```
 
-App runs on projectxplorerr.netlify.app/ in development.
+App runs on [projectxplorerr.netlify.app/] in development.
 
 ## Scripts
 
