@@ -2,6 +2,10 @@
 
 ProjeXplorer is a full-stack learning platform that helps developers discover practical project ideas, filter by skill level, and follow structured implementation guides.
 
+## Live Demo
+
+🚀 Visit the project: [Project Xplorerr](https://projectxplorerr.netlify.app/)
+
 ## What It Does
 
 - Curates 62 project ideas across beginner, intermediate, and advanced levels.
@@ -59,14 +63,6 @@ Each project card links to a detailed page with:
 - Shared Types: TypeScript interfaces in shared modules
 - Tooling: Vite, Vitest, pnpm
 
-## Local Development
-
-```bash
-pnpm install
-pnpm dev
-```
-
-App runs on [projectxplorerr.netlify.app/] in development.
 
 ## Scripts
 
